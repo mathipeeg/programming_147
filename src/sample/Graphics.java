@@ -4,10 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 
 import java.util.*;
@@ -15,28 +12,30 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Graphics extends Pane {
-    public VBox P20(){
-        VBox vBox = new VBox();
-        Map<Integer, Button> btnDict = createBtnsMap();
-        Map<Integer, Integer> intDict = createIntsMap();
+    public VBox createLottery(){
+        String[] colors = new String[]{"#2176ff", "#ff5cfc", "#5eff6c", "#ffff36"};
         AtomicReference<String> place = new AtomicReference<>("");
-        Set<Integer> amount = new HashSet<>();
         int count = 0;
-        Label wins = new Label("-");
+
+        VBox vBox = new VBox();
+        Map<Integer, Button> btnDict = createBtnsMap(colors);
+        Map<Integer, Integer> intDict = createIntsMap();
+        Set<Integer> amount = new HashSet<>();
+
         Label placement = new Label("-");
-        Label label = new Label("Winning numbers: \n");
-        wins.setVisible(false);
+        placement.setStyle("-fx-font-size: 45pt");
         placement.setVisible(false);
-        label.setVisible(false);
 
         Button[] tempList = new Button[btnDict.values().size()];
         btnDict.values().toArray(tempList);
         ArrayList<Button> btnList = new ArrayList<>(Arrays.asList(tempList));
 
         GridPane grid = createGrid(btnList);
+
         vBox.getChildren().add(grid);
         VBox.setMargin(grid, new Insets(20,20,20,20));
         vBox.setAlignment(Pos.CENTER);
+        vBox.getChildren().addAll(placement);
 
         for(Button i : btnList){
             int finalCount = count;
@@ -45,35 +44,55 @@ public class Graphics extends Pane {
                 amount.add(finalCount);
                 if(amount.size() == 10){
                     List<Integer> winningNums = winningNums();
+                    addWins(winningNums, grid, colors);
                     place.set(checkNumbers(intDict.values(), winningNums));
-                    wins.setText(winningNums.toString());
                     placement.setText("You placed " + place);
-                    wins.setVisible(true);
                     placement.setVisible(true);
-                    label.setVisible(true);
                 }
             });
             count++;
         }
-        wins.setStyle("-fx-font-size: 45pt");
-        placement.setStyle("-fx-font-size: 45pt");
-        label.setStyle("-fx-font-size: 45pt");
-        vBox.getChildren().addAll(label, wins, placement);
         return vBox;
     }
 
-    public Map<Integer, Button> createBtnsMap(){
+    private void addWins(List<Integer> wins, GridPane grid, String[] colors) {
+        int count = 1;
+        for(Integer i : wins){
+            Button w =  new Button(i.toString());
+            String color = colors[ThreadLocalRandom.current().nextInt(0, 3)];
+            w.setStyle(
+                    "-fx-background-radius: 5em; " +
+                            "-fx-min-width: 70px; " +
+                            "-fx-min-height: 70px; " +
+                            "-fx-max-width: 70px; " +
+                            "-fx-max-height: 70px;" +
+                            "-fx-background-color: " + color + ";" +
+                            "-fx-background-insets: 0px;" +
+                            "-fx-text-fill: #ffffff;" +
+                            "-fx-font-size: 20pt;" +
+                            "-fx-font-weight: bold;"
+            );
+            count++;
+            grid.add(w, count, 3);
+        }
+    }
+
+    public Map<Integer, Button> createBtnsMap(String[] colors){
         Map<Integer, Button> btnDict = new HashMap<>();
         for(int i = 0; i < 10; i++){
+            String color = colors[ThreadLocalRandom.current().nextInt(0, 3)];
             Button button = new Button("?");
             button.setStyle(
                     "-fx-background-radius: 5em; " +
-                            "-fx-min-width: 50px; " +
-                            "-fx-min-height: 50px; " +
-                            "-fx-max-width: 50px; " +
-                            "-fx-max-height: 50px;" +
-                            "-fx-background-color: -fx-body-color;" +
-                            "-fx-background-insets: 0px; "
+                            "-fx-min-width: 55px; " +
+                            "-fx-min-height: 55px; " +
+                            "-fx-max-width: 55px; " +
+                            "-fx-max-height: 55px;" +
+                            "-fx-background-color: " + color + ";" +
+                            "-fx-background-insets: 0px;" +
+                            "-fx-text-fill: #262626;" +
+                            "-fx-font-size: 15pt;" +
+                            "-fx-font-weight: bold;"
             );
             btnDict.put(i, button);
         }
@@ -102,33 +121,29 @@ public class Graphics extends Pane {
 
     public String checkNumbers(Collection<Integer> values, List<Integer> winningNums){
         int count = 0;
-        System.out.println(winningNums);
-        System.out.println(values);
-
         for(Integer i : values){
             if(winningNums.contains(i)){
                 count++;
                 System.out.println(i);
             }
         }
-        if(count == 7){
-            System.out.println("First price");
-            return "first";
-        } else if(count == 6){
-            int extraNum = ThreadLocalRandom.current().nextInt(1, 36);
-            if (values.contains(extraNum)){
-                return "second";
-            } else{
-                return "third";
-            }
-        } else if(count == 5){
-            return "fourth";
-        } else if(count == 4){
-            return "fifth";
-        } else{
-            return ".. nowhere. You lost.";
+        switch (count){
+            case 7:
+                return "first";
+            case 6:
+                int extraNum = ThreadLocalRandom.current().nextInt(1, 36);
+                if (values.contains(extraNum)){
+                    return "second";
+                } else{
+                    return "third";
+                }
+            case 5:
+                return "fourth";
+            case 4:
+                return "fifth";
+            default:
+                return ".. nowhere. You lost.";
         }
-
     }
 
     public List<Integer> winningNums(){
