@@ -15,20 +15,15 @@ public class Graphics extends Pane {
     public VBox createLottery(){
         String[] colors = new String[]{"#2176ff", "#ff5cfc", "#5eff6c", "#ffff36"};
         AtomicReference<String> place = new AtomicReference<>("");
-        int count = 0;
 
         VBox vBox = new VBox();
-        Map<Integer, Button> btnDict = createBtnsMap(colors);
-        Map<Integer, Integer> intDict = createIntsMap();
-        Set<Integer> amount = new HashSet<>();
+        Map<Button, Integer> test = createBtnsHash(colors);
+        Set<Button> amount = new HashSet<>();
+        List<Button> btnList = new ArrayList<>(test.keySet());
 
         Label placement = new Label("-");
         placement.setStyle("-fx-font-size: 45pt");
         placement.setVisible(false);
-
-        Button[] tempList = new Button[btnDict.values().size()];
-        btnDict.values().toArray(tempList);
-        ArrayList<Button> btnList = new ArrayList<>(Arrays.asList(tempList));
 
         GridPane grid = createGrid(btnList);
 
@@ -37,20 +32,20 @@ public class Graphics extends Pane {
         vBox.setAlignment(Pos.CENTER);
         vBox.getChildren().addAll(placement);
 
-        for(Button i : btnList){
-            int finalCount = count;
-            i.setOnAction(e -> {
-                i.setText(intDict.get(finalCount).toString());
-                amount.add(finalCount);
+        for (Map.Entry<Button, Integer> entry : test.entrySet()) {
+            Button btn = entry.getKey();
+            Integer v = entry.getValue();
+            btn.setOnAction(e -> {
+                btn.setText(String.valueOf(v));
+                amount.add(btn);
                 if(amount.size() == 10){
                     List<Integer> winningNums = winningNums();
                     addWins(winningNums, grid, colors);
-                    place.set(checkNumbers(intDict.values(), winningNums));
+                    place.set(checkNumbers(test.values(), winningNums));
                     placement.setText("You placed " + place);
                     placement.setVisible(true);
                 }
             });
-            count++;
         }
         return vBox;
     }
@@ -62,10 +57,10 @@ public class Graphics extends Pane {
             String color = colors[ThreadLocalRandom.current().nextInt(0, 3)];
             w.setStyle(
                     "-fx-background-radius: 5em; " +
-                            "-fx-min-width: 70px; " +
-                            "-fx-min-height: 70px; " +
-                            "-fx-max-width: 70px; " +
-                            "-fx-max-height: 70px;" +
+                            "-fx-min-width: 75px; " +
+                            "-fx-min-height: 75px; " +
+                            "-fx-max-width: 75px; " +
+                            "-fx-max-height: 75px;" +
                             "-fx-background-color: " + color + ";" +
                             "-fx-background-insets: 0px;" +
                             "-fx-text-fill: #ffffff;" +
@@ -77,38 +72,7 @@ public class Graphics extends Pane {
         }
     }
 
-    public Map<Integer, Button> createBtnsMap(String[] colors){
-        Map<Integer, Button> btnDict = new HashMap<>();
-        for(int i = 0; i < 10; i++){
-            String color = colors[ThreadLocalRandom.current().nextInt(0, 3)];
-            Button button = new Button("?");
-            button.setStyle(
-                    "-fx-background-radius: 5em; " +
-                            "-fx-min-width: 55px; " +
-                            "-fx-min-height: 55px; " +
-                            "-fx-max-width: 55px; " +
-                            "-fx-max-height: 55px;" +
-                            "-fx-background-color: " + color + ";" +
-                            "-fx-background-insets: 0px;" +
-                            "-fx-text-fill: #262626;" +
-                            "-fx-font-size: 15pt;" +
-                            "-fx-font-weight: bold;"
-            );
-            btnDict.put(i, button);
-        }
-        return btnDict;
-    }
-
-    public Map<Integer, Integer> createIntsMap(){
-        Map<Integer, Integer> intDict = new HashMap<>();
-        for(int i = 0; i <10; i++){
-            int randomNum = ThreadLocalRandom.current().nextInt(1, 36);
-            intDict.put(i, randomNum);
-        }
-        return intDict;
-    }
-
-    public GridPane createGrid(ArrayList<Button> buttons){
+    public GridPane createGrid(List<Button> buttons){
         GridPane grid = new GridPane();
         grid.setHgap(30);
         grid.setVgap(30);
@@ -155,26 +119,26 @@ public class Graphics extends Pane {
         return winningNums;
     }
 
-    // Ville gerne have dette til at fungere, men er ikke sikker på hvordan man arbejder med Map i Map, da det ikke fungerer helt som de dictionaries jeg har siddet mest med
-//    public Map<Integer, Map<Button, Integer>> createBtnsHash(){
-//        Map<Integer, Map<Button, Integer>> btnDict = new HashMap<>();
-//        for(int i = 0; i < 10; i++){
-//            Map<Button, Integer> tempDict = new HashMap();
-//            int randomNum = ThreadLocalRandom.current().nextInt(1, 36);
-//            Button button = new Button("?");
-//            button.setStyle(
-//                    "-fx-background-radius: 5em; " +
-//                            "-fx-min-width: 50px; " +
-//                            "-fx-min-height: 50px; " +
-//                            "-fx-max-width: 50px; " +
-//                            "-fx-max-height: 50px;" +
-//                            "-fx-background-color: -fx-body-color;" +
-//                            "-fx-background-insets: 0px; "
-//            );
-//            tempDict.put(button, randomNum);
-//            System.out.println(i);
-//            btnDict.put(i, tempDict);
-//        }
-//        return btnDict;
-//    }
+    public Map<Button, Integer> createBtnsHash(String[] colors){
+        Map<Button, Integer> btnDict = new HashMap<>();
+        for(int i = 0; i < 10; i++){
+            int randomNum = ThreadLocalRandom.current().nextInt(1, 36);
+            String color = colors[ThreadLocalRandom.current().nextInt(0, 3)];
+            Button button = new Button("?");
+            button.setStyle(
+                    "-fx-background-radius: 5em; " +
+                            "-fx-min-width: 60px; " +
+                            "-fx-min-height: 60px; " +
+                            "-fx-max-width: 60px; " +
+                            "-fx-max-height: 60px;" +
+                            "-fx-background-color: " + color + ";" +
+                            "-fx-background-insets: 0px;" +
+                            "-fx-text-fill: #262626;" +
+                            "-fx-font-size: 15pt;" +
+                            "-fx-font-weight: bold;"
+            );
+            btnDict.put(button, randomNum);
+        }
+        return btnDict;
+    }
 }
